@@ -36,3 +36,8 @@ EOF
 
   type = string
 }
+
+variable "environment" {
+  description = "the environment type e.g. dev, stage, prod"
+  type        = string
+}
