@@ -13,5 +13,5 @@ include {
 
 # These are inputs that need to be passed for the terragrunt configuration
 inputs = {
-  env_prefix = "${local.environment}"
+  environment = "${local.environment}"
 }

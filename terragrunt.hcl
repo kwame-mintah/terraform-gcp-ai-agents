@@ -5,7 +5,7 @@
 # ---------------------------------------------------------------------------------------------------------------------
 
 locals {
-  project_name   = "terraform-gcp-template"
+  project_name   = "gcp-coding-agent"
   gcp_project_id = read_terragrunt_config("environment.hcl").locals.project_id
   gcp_region     = read_terragrunt_config("environment.hcl").locals.region
   gcp_zone       = read_terragrunt_config("environment.hcl").locals.zone
