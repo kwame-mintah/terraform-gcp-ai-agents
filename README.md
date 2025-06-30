@@ -1,8 +1,11 @@
-# Terraform Google Cloud Platform (GCP) Template
+# Terraform Google Cloud Platform (GCP) AI agent(s)
 
-The main purpose of this repository is to create a template for [Terraform](https://www.terraform.io/). This project will focus on the [GCP](https://registry.terraform.io/providers/hashicorp/google/latest) provider.
+The main purpose of this repository is to deploy various Artificial Intelligence (AI) agents who will work together to achieve
+a common goal. All resources will be deployed onto Google Cloud Platform (GCP) for learning purposes.
 
 ## Development
+
+![](./diagrams/proposed_architecture_for_gcp.png)
 
 ### Dependencies
 
