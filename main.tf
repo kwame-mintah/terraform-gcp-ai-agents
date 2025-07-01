@@ -11,7 +11,16 @@ resource "google_artifact_registry_repository" "ai_agent_docker_image_1" {
   description   = "Docker registry for AI agent application"
   location      = var.gcp_region
   labels = {
-    "environment" = var.environment
+    "environment"        = var.environment
+    git_commit           = "c6e78a9a04a7158aeca11d11edca7b9420a74593"
+    git_file             = "main_tf"
+    git_last_modified_at = "2025-07-01-14-16-20"
+    git_last_modified_by = "37197235kwame-mintah"
+    git_modifiers        = "37197235kwame-mintah__laoluanimashaun"
+    git_org              = "kwame-mintah"
+    git_repo             = "terraform-gcp-ai-agents"
+    yor_name             = "ai_agent_docker_image_1"
+    yor_trace            = "e98a609e-1970-45b9-a2e9-05be327afa2e"
   }
 }
 
@@ -22,6 +31,17 @@ resource "google_secret_manager_secret" "github_token_secret" {
 
   replication {
     auto {}
+  }
+  labels = {
+    git_commit           = "797b3a11d2b4abaa06970937302428e5c686361b"
+    git_file             = "main_tf"
+    git_last_modified_at = "2025-06-24-15-16-31"
+    git_last_modified_by = "laoluanimashaun"
+    git_modifiers        = "laoluanimashaun"
+    git_org              = "kwame-mintah"
+    git_repo             = "terraform-gcp-ai-agents"
+    yor_name             = "github_token_secret"
+    yor_trace            = "d5a21a61-cf27-467d-9ebf-9ef645e2f788"
   }
 }
 
