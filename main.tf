@@ -80,3 +80,37 @@ resource "google_cloudbuildv2_connection" "cloudbuild_github_project_connection"
   }
   depends_on = [google_secret_manager_secret_iam_policy.policy]
 }
+
+resource "google_cloudbuild_trigger" "filename-trigger" {
+  location = var.gcp_region
+
+  repository_event_config {
+    // The 'repository' attribute should reference a google_cloudbuildv2_repository resource.
+    // Ensure this repository connection and repository resource are defined elsewhere in your Terraform.
+    repository = "projects/syntax-errors/locations/europe-west2/connections/ai-agent-github-connection/repositories/kwame-mintah-hugging-face-smolagents-playground"
+    push {
+      branch       = "cloudbuild-yaml"
+      invert_regex = false
+    }
+  }
+
+  service_account = google_service_account.cloudbuild_service_account.id
+  filename        = "cloudbuild.yaml"
+}
+
+
+resource "google_service_account" "cloudbuild_service_account" {
+  account_id = "cloud-sa"
+}
+
+resource "google_project_iam_member" "act_as" {
+  project = data.google_project.project.project_id
+  role    = "roles/iam.serviceAccountUser"
+  member  = "serviceAccount:${google_service_account.cloudbuild_service_account.email}"
+}
+
+resource "google_project_iam_member" "logs_writer" {
+  project = data.google_project.project.project_id
+  role    = "roles/logging.logWriter"
+  member  = "serviceAccount:${google_service_account.cloudbuild_service_account.email}"
+}
