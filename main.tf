@@ -69,7 +69,7 @@ resource "google_secret_manager_secret_iam_policy" "policy" {
 # creates connection from cloudbuild to github
 resource "google_cloudbuildv2_connection" "cloudbuild_github_project_connection" {
   project  = var.gcp_project
-  location = var.gcp_region
+  location = "europe-west1"
   name     = "ai-agent-github-connection"
 
   github_config {
@@ -82,12 +82,12 @@ resource "google_cloudbuildv2_connection" "cloudbuild_github_project_connection"
 }
 
 resource "google_cloudbuild_trigger" "filename-trigger" {
-  location = var.gcp_region
+  location = "europe-west1"
 
   repository_event_config {
     // The 'repository' attribute should reference a google_cloudbuildv2_repository resource.
     // Ensure this repository connection and repository resource are defined elsewhere in your Terraform.
-    repository = "projects/syntax-errors/locations/europe-west2/connections/ai-agent-github-connection/repositories/kwame-mintah-hugging-face-smolagents-playground"
+    repository = "projects/syntax-errors/locations/europe-west1/connections/ai-agent-github-connection/repositories/kwame-mintah-hugging-face-smolagents-playground"
     push {
       branch       = "cloudbuild-yaml"
       invert_regex = false
@@ -112,5 +112,11 @@ resource "google_project_iam_member" "act_as" {
 resource "google_project_iam_member" "logs_writer" {
   project = data.google_project.project.project_id
   role    = "roles/logging.logWriter"
+  member  = "serviceAccount:${google_service_account.cloudbuild_service_account.email}"
+}
+
+resource "google_project_iam_member" "upload_artifacts" {
+  project = data.google_project.project.project_id
+  role    = "roles/artifactregistry.createOnPushWriter"
   member  = "serviceAccount:${google_service_account.cloudbuild_service_account.email}"
 }
