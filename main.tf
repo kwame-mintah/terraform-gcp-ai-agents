@@ -95,9 +95,9 @@ resource "google_cloudbuild_trigger" "filename-trigger" {
     }
 
     push {
-    branch       = "^main$"
-    invert_regex = false
-  }
+      branch       = "^main$"
+      invert_regex = false
+    }
   }
 
   service_account = google_service_account.cloudbuild_service_account.id
