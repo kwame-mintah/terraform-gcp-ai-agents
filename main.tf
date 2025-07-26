@@ -88,10 +88,10 @@ resource "google_cloudbuild_trigger" "filename-trigger" {
     // The 'repository' attribute should reference a google_cloudbuildv2_repository resource.
     // Ensure this repository connection and repository resource are defined elsewhere in your Terraform.
     repository = "projects/syntax-errors/locations/europe-west1/connections/ai-agent-github-connection/repositories/kwame-mintah-hugging-face-smolagents-playground"
-     pull_request {
-        branch = "^main$"
-        invert_regex = false
-        comment_control = "COMMENTS_ENABLED"
+    pull_request {
+      branch          = "^main$"
+      invert_regex    = false
+      comment_control = "COMMENTS_ENABLED"
     }
   }
 
