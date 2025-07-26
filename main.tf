@@ -93,6 +93,11 @@ resource "google_cloudbuild_trigger" "filename-trigger" {
       invert_regex    = false
       comment_control = "COMMENTS_ENABLED"
     }
+
+    push {
+    branch       = "^main$"
+    invert_regex = false
+  }
   }
 
   service_account = google_service_account.cloudbuild_service_account.id
