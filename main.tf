@@ -69,7 +69,7 @@ resource "google_secret_manager_secret_iam_policy" "policy" {
 # creates connection from cloudbuild to github
 resource "google_cloudbuildv2_connection" "cloudbuild_github_project_connection" {
   project  = var.gcp_project
-  location = var.gcp_region
+  location = "europe-west1"
   name     = "ai-agent-github-connection"
 
   github_config {
@@ -79,4 +79,50 @@ resource "google_cloudbuildv2_connection" "cloudbuild_github_project_connection"
     }
   }
   depends_on = [google_secret_manager_secret_iam_policy.policy]
+}
+
+resource "google_cloudbuild_trigger" "filename-trigger" {
+  location = "europe-west1"
+
+  repository_event_config {
+    // The 'repository' attribute should reference a google_cloudbuildv2_repository resource.
+    // Ensure this repository connection and repository resource are defined elsewhere in your Terraform.
+    repository = "projects/syntax-errors/locations/europe-west1/connections/ai-agent-github-connection/repositories/kwame-mintah-hugging-face-smolagents-playground"
+    pull_request {
+      branch          = "^main$"
+      invert_regex    = false
+      comment_control = "COMMENTS_ENABLED"
+    }
+
+    push {
+      branch       = "^main$"
+      invert_regex = false
+    }
+  }
+
+  service_account = google_service_account.cloudbuild_service_account.id
+  filename        = "cloudbuild.yaml"
+}
+
+
+resource "google_service_account" "cloudbuild_service_account" {
+  account_id = "cloud-sa"
+}
+
+resource "google_project_iam_member" "act_as" {
+  project = data.google_project.project.project_id
+  role    = "roles/iam.serviceAccountUser"
+  member  = "serviceAccount:${google_service_account.cloudbuild_service_account.email}"
+}
+
+resource "google_project_iam_member" "logs_writer" {
+  project = data.google_project.project.project_id
+  role    = "roles/logging.logWriter"
+  member  = "serviceAccount:${google_service_account.cloudbuild_service_account.email}"
+}
+
+resource "google_project_iam_member" "upload_artifacts" {
+  project = data.google_project.project.project_id
+  role    = "roles/artifactregistry.createOnPushWriter"
+  member  = "serviceAccount:${google_service_account.cloudbuild_service_account.email}"
 }
