@@ -5,6 +5,7 @@ data "sops_file" "encrypted_secrets" {
   source_file = "secrets.enc.yaml"
 }
 
+# Creates artifact register to store docker images
 resource "google_artifact_registry_repository" "ai_agent_docker_image_1" {
   format        = "DOCKER"
   repository_id = "ai-agent-docker-image-id-1"
@@ -125,4 +126,35 @@ resource "google_project_iam_member" "upload_artifacts" {
   project = data.google_project.project.project_id
   role    = "roles/artifactregistry.createOnPushWriter"
   member  = "serviceAccount:${google_service_account.cloudbuild_service_account.email}"
+}
+
+// GKE Cluster 
+data "google_compute_network" "default" {
+  name = "default"
+}
+
+data "google_compute_subnetwork" "default" {
+  name   = "default"
+  region = var.gcp_region
+}
+
+resource "google_container_cluster" "default" {
+  name = "example-autopilot-cluster"
+
+  location                 = var.gcp_region
+  enable_autopilot         = true
+  #enable_l4_ilb_subsetting = true
+
+  network    = data.google_compute_network.default.id
+  subnetwork = data.google_compute_subnetwork.default.id
+
+  #ip_allocation_policy {
+  #  stack_type                    = "IPV4_IPV6"
+  #  services_secondary_range_name = google_compute_subnetwork.default.secondary_ip_range[0].range_name
+  #  cluster_secondary_range_name  = google_compute_subnetwork.default.secondary_ip_range[1].range_name
+  #}
+
+  # Set `deletion_protection` to `true` will ensure that one cannot
+  # accidentally delete this instance by use of Terraform.
+  deletion_protection = false
 }
