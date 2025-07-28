@@ -55,7 +55,7 @@ resource "google_secret_manager_secret_version" "github_token_secret_version" {
 data "google_iam_policy" "cloudbuild_service_account_iam_policy" {
   binding {
     role    = "roles/secretmanager.secretAccessor"
-    members = ["serviceAccount:service-325862358211@gcp-sa-cloudbuild.iam.gserviceaccount.com"] # TODO Should service account be hardcoded
+    members = ["serviceAccount:service-${data.google_project.project.number}@gcp-sa-cloudbuild.iam.gserviceaccount.com"]
   }
 }
 
@@ -81,19 +81,20 @@ resource "google_cloudbuildv2_connection" "cloudbuild_github_project_connection"
   depends_on = [google_secret_manager_secret_iam_policy.policy]
 }
 
-resource "google_cloudbuild_trigger" "filename-trigger" {
-  location = "europe-west1"
+resource "google_cloudbuildv2_repository" "hugging_face_smolagents_playground_repo" {
+  name              = "hugging-face-smolagents-playground"
+  location          = "europe-west1"
+  parent_connection = google_cloudbuildv2_connection.cloudbuild_github_project_connection.name
+  remote_uri        = "https://github.com/kwame-mintah/hugging-face-smolagents-playground.git"
+}
+
+resource "google_cloudbuild_trigger" "hugging_face_smolagents_playground_repo_main_trigger" {
+  name        = "hugging-face-smolagents-main-branch-trigger"
+  description = "Trigger to run on new pushes to main branch"
+  location    = "europe-west1"
 
   repository_event_config {
-    // The 'repository' attribute should reference a google_cloudbuildv2_repository resource.
-    // Ensure this repository connection and repository resource are defined elsewhere in your Terraform.
-    repository = "projects/syntax-errors/locations/europe-west1/connections/ai-agent-github-connection/repositories/kwame-mintah-hugging-face-smolagents-playground"
-    pull_request {
-      branch          = "^main$"
-      invert_regex    = false
-      comment_control = "COMMENTS_ENABLED"
-    }
-
+    repository = google_cloudbuildv2_repository.hugging_face_smolagents_playground_repo.id
     push {
       branch       = "^main$"
       invert_regex = false
@@ -104,24 +105,48 @@ resource "google_cloudbuild_trigger" "filename-trigger" {
   filename        = "cloudbuild.yaml"
 }
 
+resource "google_cloudbuild_trigger" "hugging_face_smolagents_playground_repo_pull_request_trigger" {
+  name        = "hugging-face-smolagents-pull-request-trigger"
+  description = "Pull request trigger to only run if /gcbrun is commented"
+  location    = "europe-west1"
 
-resource "google_service_account" "cloudbuild_service_account" {
-  account_id = "cloud-sa"
+  repository_event_config {
+    repository = google_cloudbuildv2_repository.hugging_face_smolagents_playground_repo.id
+    pull_request {
+      branch          = "^main$"
+      invert_regex    = false
+      comment_control = "COMMENTS_ENABLED"
+    }
+  }
+
+  service_account = google_service_account.cloudbuild_service_account.id
+  filename        = "cloudbuild.yaml"
 }
 
-resource "google_project_iam_member" "act_as" {
+
+# Create cloud build service account
+resource "google_service_account" "cloudbuild_service_account" {
+  display_name = "${data.google_project.project.name} CloudBuild service account"
+  account_id   = "cloudbuild-service-account"
+  description  = "The service account needed for cloud build runs."
+}
+
+# Allow cloud build service account to assume another role
+resource "google_project_iam_member" "cloudbuild_act_as_role" {
   project = data.google_project.project.project_id
   role    = "roles/iam.serviceAccountUser"
   member  = "serviceAccount:${google_service_account.cloudbuild_service_account.email}"
 }
 
-resource "google_project_iam_member" "logs_writer" {
+# Allow cloud build service account to write logs during builds
+resource "google_project_iam_member" "cloudbuild_logs_writer_role" {
   project = data.google_project.project.project_id
   role    = "roles/logging.logWriter"
   member  = "serviceAccount:${google_service_account.cloudbuild_service_account.email}"
 }
 
-resource "google_project_iam_member" "upload_artifacts" {
+# Allow cloud build service account upload to artifact registry 
+resource "google_project_iam_member" "cloudbuild_upload_artifacts_role" {
   project = data.google_project.project.project_id
   role    = "roles/artifactregistry.createOnPushWriter"
   member  = "serviceAccount:${google_service_account.cloudbuild_service_account.email}"
