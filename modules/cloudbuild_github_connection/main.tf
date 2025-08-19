@@ -10,6 +10,10 @@ resource "google_secret_manager_secret" "github_token_secret" {
   replication {
     auto {}
   }
+  labels = {
+    yor_name  = "github_token_secret"
+    yor_trace = "2fc94af2-0c94-499f-9d2b-f07b18a1c4c3"
+  }
 }
 
 # creates actual secrets

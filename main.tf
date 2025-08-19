@@ -13,7 +13,7 @@ resource "google_artifact_registry_repository" "ai_agent_docker_image_1" {
   location      = var.gcp_region
   labels = {
     "environment"        = var.environment
-    git_commit           = "c6e78a9a04a7158aeca11d11edca7b9420a74593"
+    git_commit           = "30ea2146222b4e0a0c10be74309a7134f22a33ef"
     git_file             = "main_tf"
     git_last_modified_at = "2025-07-01-14-16-20"
     git_last_modified_by = "37197235kwame-mintah"
