@@ -126,26 +126,28 @@ data "google_compute_subnetwork" "default" {
    region = var.gcp_region
 }
 
-resource "google_container_cluster" "default" {
-  name = "example-autopilot-cluster"
+  # Minimal Autopilot GKE Cluster
+resource "google_container_cluster" "gke" {
+  name             = "ai-agent-cluster"
+  location         = var.gcp_region
+  enable_autopilot = true
 
-  location                 = var.gcp_region
-   enable_autopilot         = true
-   #enable_l4_ilb_subsetting = true
+  network    = data.google_compute_network.default.id
+  subnetwork = data.google_compute_subnetwork.default.id
 
-   network    = data.google_compute_network.default.id
-   subnetwork = data.google_compute_subnetwork.default.id
-
-
-   # Set `deletion_protection` to `true` will ensure that one cannot
+  # Set `deletion_protection` to `true` will ensure that one cannot
    # accidentally delete this instance by use of Terraform.
    deletion_protection = false
-  }
+}
 
 # # https://cloud.google.com/kubernetes-engine/docs/quickstarts/create-cluster-using-terraform#review_the_terraform_files
-resource "kubernetes_deployment_v1" "default" {
+# Deploy your container
+resource "kubernetes_deployment_v1" "ai_agent" {
   metadata {
     name = "ai-agent-deployment"
+    labels = {
+      app = "ai-agent"
+    }
   }
 
   spec {
@@ -164,46 +166,13 @@ resource "kubernetes_deployment_v1" "default" {
 
       spec {
         container {
-          image = "europe-west2-docker.pkg.dev/syntax-errors/ai-agent-docker-image-id-1/agent-image@sha256:aaf8f10fdad51f6ad14c09e1970f05fc5af998b7ea5c606abf0dbb69387f5c9a"
           name  = "ai-agent-container"
+          image = "europe-west2-docker.pkg.dev/syntax-errors/ai-agent-docker-image-id-1/agent-image@sha256:aaf8f10fdad51f6ad14c09e1970f05fc5af998b7ea5c606abf0dbb69387f5c9a"
           port {
             container_port = 8080
-            name           = "ai-agent-svc"
           }
         }
-
       }
     }
   }
-}
-
-resource "kubernetes_service_v1" "default" {
-  metadata {
-    name = "ai-agent-loadbalancer"
-    annotations = {
-      "networking.gke.io/load-balancer-type" = "Internal" # Remove to create an external loadbalancer
-    }
-  }
-
-  spec {
-    selector = {
-      app = kubernetes_deployment_v1.default.spec[0].selector[0].match_labels.app
-    }
-
-    port {
-      port        = 80
-      target_port = kubernetes_deployment_v1.default.spec[0].template[0].spec[0].container[0].port[0].name
-    }
-
-    type = "LoadBalancer"
-  }
-
-  depends_on = [time_sleep.wait_service_cleanup]
-}
-
-# Provide time for Service cleanup
-resource "time_sleep" "wait_service_cleanup" {
-  depends_on = [google_container_cluster.default]
-
-  destroy_duration = "180s"
 }
