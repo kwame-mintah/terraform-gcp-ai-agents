@@ -126,6 +126,12 @@ data "google_compute_subnetwork" "default" {
    region = var.gcp_region
 }
 
+data "google_artifact_registry_docker_image" "my_image" {
+  location      = google_artifact_registry_repository.ai_agent_docker_image_1.location
+  repository_id = google_artifact_registry_repository.ai_agent_docker_image_1.repository_id
+  image_name    = "agent-image"
+}
+
   # Minimal Autopilot GKE Cluster
 resource "google_container_cluster" "gke" {
   name             = "ai-agent-cluster"
@@ -167,7 +173,7 @@ resource "kubernetes_deployment_v1" "ai_agent" {
       spec {
         container {
           name  = "ai-agent-container"
-          image = "europe-west2-docker.pkg.dev/syntax-errors/ai-agent-docker-image-id-1/agent-image@sha256:aaf8f10fdad51f6ad14c09e1970f05fc5af998b7ea5c606abf0dbb69387f5c9a"
+          image = data.google_artifact_registry_docker_image.my_image.self_link
           port {
             container_port = 8080
           }
@@ -176,3 +182,6 @@ resource "kubernetes_deployment_v1" "ai_agent" {
     }
   }
 }
+
+
+//gcloud container clusters get-credentials ai-agent-cluster --region europe-west2 --project syntax-errors
