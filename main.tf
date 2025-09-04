@@ -146,6 +146,13 @@ resource "google_container_cluster" "gke" {
    deletion_protection = false
 }
 
+provider "kubernetes" {
+  host = "https://${google_container_cluster.gke.endpoint}"
+
+  config_path    = "~/.kube/config"
+  config_context_cluster = "gke_syntax-errors_europe-west2_ai-agent-cluster"
+}
+
 # # https://cloud.google.com/kubernetes-engine/docs/quickstarts/create-cluster-using-terraform#review_the_terraform_files
 # Deploy your container
 resource "kubernetes_deployment_v1" "ai_agent" {
@@ -176,6 +183,10 @@ resource "kubernetes_deployment_v1" "ai_agent" {
           image = data.google_artifact_registry_docker_image.my_image.self_link
           port {
             container_port = 8080
+          }
+          env  {
+            name = "HF_TOKEN"
+            value = "ENTER_YOUR_TOKEN" 
           }
         }
       }
