@@ -153,13 +153,17 @@ provider "kubernetes" {
   config_context_cluster = "gke_syntax-errors_europe-west2_ai-agent-cluster"
 }
 
+data "sops_file" "hugging_face_secrets" {
+  source_file = "./hugging-face-secret.enc.yaml"
+}
+
 resource "kubernetes_secret_v1" "hugging_face_token" {
   metadata {
     name = "hugging-face-token"
   }
 
   data =  {
-    "HF_TOKEN" = "YOUR_TOKEN"
+    "HF_TOKEN" = data.sops_file.hugging_face_secrets.data.token
   }
 }
 
