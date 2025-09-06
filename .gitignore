@@ -22,3 +22,4 @@ secrets.tfvars
 
 syntax-errors-*.json
 key*.txt
+*secret.yaml
