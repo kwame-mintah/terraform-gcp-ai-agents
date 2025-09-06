@@ -153,6 +153,16 @@ provider "kubernetes" {
   config_context_cluster = "gke_syntax-errors_europe-west2_ai-agent-cluster"
 }
 
+resource "kubernetes_secret_v1" "hugging_face_token" {
+  metadata {
+    name = "hugging-face-token"
+  }
+
+  data =  {
+    "HF_TOKEN" = "YOUR_TOKEN"
+  }
+}
+
 # # https://cloud.google.com/kubernetes-engine/docs/quickstarts/create-cluster-using-terraform#review_the_terraform_files
 # Deploy your container
 resource "kubernetes_deployment_v1" "ai_agent" {
@@ -186,7 +196,12 @@ resource "kubernetes_deployment_v1" "ai_agent" {
           }
           env  {
             name = "HF_TOKEN"
-            value = "ENTER_YOUR_TOKEN" 
+            value_from {
+              secret_key_ref {
+                name = "hugging-face-token"
+                key = "HF_TOKEN"
+            }
+            }
           }
         }
       }
