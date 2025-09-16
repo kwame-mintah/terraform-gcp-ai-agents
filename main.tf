@@ -116,7 +116,7 @@ resource "google_project_iam_member" "cloudbuild_upload_artifacts_role" {
   member  = "serviceAccount:${google_service_account.cloudbuild_service_account.email}"
 }
 
-# // GKE Cluster terr
+# // GKE Cluster
 data "google_compute_network" "default" {
      name = "default"
 }
@@ -147,8 +147,6 @@ resource "google_container_cluster" "gke" {
 }
 
 provider "kubernetes" {
-  host = "https://${google_container_cluster.gke.endpoint}"
-
   config_path    = "~/.kube/config"
   config_context_cluster = "gke_syntax-errors_europe-west2_ai-agent-cluster"
 }
@@ -213,7 +211,7 @@ resource "kubernetes_deployment_v1" "ai_agent" {
   }
 
   lifecycle {
-      ignore_changes = [all]
+      ignore_changes = [spec[0].template[0].spec[0].container[0].image] # Terraform will create this cluster but never update or delete it
     }
 }
 
