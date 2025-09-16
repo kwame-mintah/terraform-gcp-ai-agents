@@ -163,7 +163,7 @@ resource "kubernetes_secret_v1" "hugging_face_token" {
   }
 
   data =  {
-    "HF_TOKEN" = data.sops_file.hugging_face_secrets.data.token
+    "HF_TOKEN" = google_secret_manager_secret_version.hugging_face_secret_version.secret_data
   }
 }
 
@@ -211,6 +211,22 @@ resource "kubernetes_deployment_v1" "ai_agent" {
       }
     }
   }
+}
+
+# Create a secret containing the personal access token and grant permissions to the Service Agent
+resource "google_secret_manager_secret" "hugging_face_secrets" {
+  project   = var.gcp_project
+  secret_id = "syntax-errors-ai-agent-secret-module-hf"
+
+  replication {
+    auto {}
+  }
+}
+
+# creates actual secrets
+resource "google_secret_manager_secret_version" "hugging_face_secret_version" {
+  secret      = google_secret_manager_secret.hugging_face_secrets.id
+  secret_data = data.sops_file.hugging_face_secrets.data.token
 }
 
 
