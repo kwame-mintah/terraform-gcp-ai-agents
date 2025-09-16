@@ -211,6 +211,10 @@ resource "kubernetes_deployment_v1" "ai_agent" {
       }
     }
   }
+
+  lifecycle {
+      ignore_changes = [all]
+    }
 }
 
 # Create a secret containing the personal access token and grant permissions to the Service Agent
