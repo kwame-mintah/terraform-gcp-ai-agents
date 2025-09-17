@@ -8,7 +8,5 @@ provider "google" {
 
 # https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs#in-cluster-config
 # TODO configure
-provider "kubernetes" {
-  config_path    = "~/.kube/config"
-  config_context = "my-context"
-}
+
+//data "google_client_config" "default" {}

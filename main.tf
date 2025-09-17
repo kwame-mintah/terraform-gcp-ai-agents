@@ -115,3 +115,121 @@ resource "google_project_iam_member" "cloudbuild_upload_artifacts_role" {
   role    = "roles/artifactregistry.createOnPushWriter"
   member  = "serviceAccount:${google_service_account.cloudbuild_service_account.email}"
 }
+
+# // GKE Cluster
+data "google_compute_network" "default" {
+     name = "default"
+}
+
+data "google_compute_subnetwork" "default" {
+     name   = "default"
+   region = var.gcp_region
+}
+
+data "google_artifact_registry_docker_image" "my_image" {
+  location      = google_artifact_registry_repository.ai_agent_docker_image_1.location
+  repository_id = google_artifact_registry_repository.ai_agent_docker_image_1.repository_id
+  image_name    = "agent-image"
+}
+
+  # Minimal Autopilot GKE Cluster
+resource "google_container_cluster" "gke" {
+  name             = "ai-agent-cluster"
+  location         = var.gcp_region
+  enable_autopilot = true
+
+  network    = data.google_compute_network.default.id
+  subnetwork = data.google_compute_subnetwork.default.id
+
+  # Set `deletion_protection` to `true` will ensure that one cannot
+   # accidentally delete this instance by use of Terraform.
+   deletion_protection = false
+}
+
+provider "kubernetes" {
+  config_path    = "~/.kube/config"
+  config_context_cluster = "gke_syntax-errors_europe-west2_ai-agent-cluster"
+}
+
+data "sops_file" "hugging_face_secrets" {
+  source_file = "./hugging-face-secret.enc.yaml"
+}
+
+resource "kubernetes_secret_v1" "hugging_face_token" {
+  metadata {
+    name = "hugging-face-token"
+  }
+
+  data =  {
+    "HF_TOKEN" = google_secret_manager_secret_version.hugging_face_secret_version.secret_data
+  }
+}
+
+# # https://cloud.google.com/kubernetes-engine/docs/quickstarts/create-cluster-using-terraform#review_the_terraform_files
+# Deploy your container
+resource "kubernetes_deployment_v1" "ai_agent" {
+  metadata {
+    name = "ai-agent-deployment"
+    labels = {
+      app = "ai-agent"
+    }
+  }
+
+  spec {
+    selector {
+      match_labels = {
+        app = "ai-agent"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          app = "ai-agent"
+        }
+      }
+
+      spec {
+        container {
+          name  = "ai-agent-container"
+          image = data.google_artifact_registry_docker_image.my_image.self_link
+          port {
+            container_port = 8080
+          }
+          env  {
+            name = "HF_TOKEN"
+            value_from {
+              secret_key_ref {
+                name = "hugging-face-token"
+                key = "HF_TOKEN"
+            }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  lifecycle {
+      ignore_changes = [spec[0].template[0].spec[0].container[0].image] # Terraform will create this cluster but never update or delete it
+    }
+}
+
+# Create a secret containing the personal access token and grant permissions to the Service Agent
+resource "google_secret_manager_secret" "hugging_face_secrets" {
+  project   = var.gcp_project
+  secret_id = "syntax-errors-ai-agent-secret-module-hf"
+
+  replication {
+    auto {}
+  }
+}
+
+# creates actual secrets
+resource "google_secret_manager_secret_version" "hugging_face_secret_version" {
+  secret      = google_secret_manager_secret.hugging_face_secrets.id
+  secret_data = data.sops_file.hugging_face_secrets.data.token
+}
+
+
+//gcloud container clusters get-credentials ai-agent-cluster --region europe-west2 --project syntax-errors
