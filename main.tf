@@ -13,7 +13,7 @@ resource "google_artifact_registry_repository" "ai_agent_docker_image_1" {
   location      = var.gcp_region
   labels = {
     "environment"        = var.environment
-    git_commit           = "30ea2146222b4e0a0c10be74309a7134f22a33ef"
+    git_commit           = "c6e78a9a04a7158aeca11d11edca7b9420a74593"
     git_file             = "main_tf"
     git_last_modified_at = "2025-07-01-14-16-20"
     git_last_modified_by = "37197235kwame-mintah"
@@ -118,12 +118,12 @@ resource "google_project_iam_member" "cloudbuild_upload_artifacts_role" {
 
 # // GKE Cluster
 data "google_compute_network" "default" {
-     name = "default"
+  name = "default"
 }
 
 data "google_compute_subnetwork" "default" {
-     name   = "default"
-   region = var.gcp_region
+  name   = "default"
+  region = var.gcp_region
 }
 
 data "google_artifact_registry_docker_image" "my_image" {
@@ -132,7 +132,7 @@ data "google_artifact_registry_docker_image" "my_image" {
   image_name    = "agent-image"
 }
 
-  # Minimal Autopilot GKE Cluster
+# Minimal Autopilot GKE Cluster
 resource "google_container_cluster" "gke" {
   name             = "ai-agent-cluster"
   location         = var.gcp_region
@@ -142,12 +142,12 @@ resource "google_container_cluster" "gke" {
   subnetwork = data.google_compute_subnetwork.default.id
 
   # Set `deletion_protection` to `true` will ensure that one cannot
-   # accidentally delete this instance by use of Terraform.
-   deletion_protection = false
+  # accidentally delete this instance by use of Terraform.
+  deletion_protection = false
 }
 
 provider "kubernetes" {
-  config_path    = "~/.kube/config"
+  config_path            = "~/.kube/config"
   config_context_cluster = "gke_syntax-errors_europe-west2_ai-agent-cluster"
 }
 
@@ -160,7 +160,7 @@ resource "kubernetes_secret_v1" "hugging_face_token" {
     name = "hugging-face-token"
   }
 
-  data =  {
+  data = {
     "HF_TOKEN" = google_secret_manager_secret_version.hugging_face_secret_version.secret_data
   }
 }
@@ -196,13 +196,13 @@ resource "kubernetes_deployment_v1" "ai_agent" {
           port {
             container_port = 8080
           }
-          env  {
+          env {
             name = "HF_TOKEN"
             value_from {
               secret_key_ref {
                 name = "hugging-face-token"
-                key = "HF_TOKEN"
-            }
+                key  = "HF_TOKEN"
+              }
             }
           }
         }
@@ -211,8 +211,8 @@ resource "kubernetes_deployment_v1" "ai_agent" {
   }
 
   lifecycle {
-      ignore_changes = [spec[0].template[0].spec[0].container[0].image] # Terraform will create this cluster but never update or delete it
-    }
+    ignore_changes = [spec[0].template[0].spec[0].container[0].image] # Terraform will create this cluster but never update or delete it
+  }
 }
 
 # Create a secret containing the personal access token and grant permissions to the Service Agent
@@ -222,6 +222,17 @@ resource "google_secret_manager_secret" "hugging_face_secrets" {
 
   replication {
     auto {}
+  }
+  labels = {
+    git_commit           = "438a95e0ee681ebe85f86f3a98628f087eb272c2"
+    git_file             = "main_tf"
+    git_last_modified_at = "2025-09-17-08-52-34"
+    git_last_modified_by = "laolu"
+    git_modifiers        = "laolu"
+    git_org              = "kwame-mintah"
+    git_repo             = "terraform-gcp-ai-agents"
+    yor_name             = "hugging_face_secrets"
+    yor_trace            = "3a651cc9-e97b-48fa-a222-6a958f9ceebd"
   }
 }
 

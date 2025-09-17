@@ -11,8 +11,15 @@ resource "google_secret_manager_secret" "github_token_secret" {
     auto {}
   }
   labels = {
-    yor_name  = "github_token_secret"
-    yor_trace = "2fc94af2-0c94-499f-9d2b-f07b18a1c4c3"
+    yor_name             = "github_token_secret"
+    yor_trace            = "2fc94af2-0c94-499f-9d2b-f07b18a1c4c3"
+    git_commit           = "f73f9d74457f282c43d0f6410db1c6d0fde5a33e"
+    git_file             = "modules__cloudbuild_github_connection__main_tf"
+    git_last_modified_at = "2025-08-19-14-20-10"
+    git_last_modified_by = "laolu"
+    git_modifiers        = "laolu"
+    git_org              = "kwame-mintah"
+    git_repo             = "terraform-gcp-ai-agents"
   }
 }
 
