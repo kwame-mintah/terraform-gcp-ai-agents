@@ -1,10 +1,6 @@
 # Data source to get project details
 data "google_project" "project" {}
 
-data "sops_file" "encrypted_secrets" {
-  source_file = "secrets.enc.yaml"
-}
-
 # Creates artifact register to store docker images
 resource "google_artifact_registry_repository" "ai_agent_docker_image_1" {
   format        = "DOCKER"
@@ -35,15 +31,6 @@ module "cloudbuild_github_connection" {
   secret_manager_secret_id          = "syntax-errors-ai-agent-secret-module"
   sops_source_file                  = "./secrets.enc.yaml"
 }
-
-# creates data object for new iam policy
-data "google_iam_policy" "cloudbuild_service_account_iam_policy" {
-  binding {
-    role    = "roles/secretmanager.secretAccessor"
-    members = ["serviceAccount:service-${data.google_project.project.number}@gcp-sa-cloudbuild.iam.gserviceaccount.com"]
-  }
-}
-
 
 resource "google_cloudbuildv2_repository" "hugging_face_smolagents_playground_repo" {
   name              = "hugging-face-smolagents-playground"
@@ -141,14 +128,13 @@ resource "google_container_cluster" "gke" {
   network    = data.google_compute_network.default.id
   subnetwork = data.google_compute_subnetwork.default.id
 
+  resource_labels = {
+    "EnvironmentS" = var.environment
+  }
+
   # Set `deletion_protection` to `true` will ensure that one cannot
   # accidentally delete this instance by use of Terraform.
   deletion_protection = false
-}
-
-provider "kubernetes" {
-  config_path            = "~/.kube/config"
-  config_context_cluster = "gke_syntax-errors_europe-west2_ai-agent-cluster"
 }
 
 data "sops_file" "hugging_face_secrets" {
@@ -241,6 +227,3 @@ resource "google_secret_manager_secret_version" "hugging_face_secret_version" {
   secret      = google_secret_manager_secret.hugging_face_secrets.id
   secret_data = data.sops_file.hugging_face_secrets.data.token
 }
-
-
-//gcloud container clusters get-credentials ai-agent-cluster --region europe-west2 --project syntax-errors
