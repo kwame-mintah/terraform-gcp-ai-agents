@@ -29,6 +29,11 @@ provider "google" {
   add_terraform_attribution_label               = true
   terraform_attribution_label_addition_strategy = "PROACTIVE"
 }
+
+provider "kubernetes" {
+  config_path            = "~/.kube/config"
+  config_context_cluster = "gke_${local.gcp_project_id}_${local.gcp_region}_ai-agent-cluster"
+}
 EOF
 }
 
