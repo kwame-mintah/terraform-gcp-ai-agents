@@ -9,4 +9,4 @@ provider "google" {
 # https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs#in-cluster-config
 # TODO configure
 
-//data "google_client_config" "default" {}
+
