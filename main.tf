@@ -146,9 +146,15 @@ resource "google_container_cluster" "gke" {
   deletion_protection = false
 }
 
+data "google_client_config" "default" {}
+
 provider "kubernetes" {
-  config_path            = "~/.kube/config"
-  config_context_cluster = "gke_syntax-errors_europe-west2_ai-agent-cluster"
+  host = "https://${google_container_cluster.gke.endpoint}"
+
+  token = data.google_client_config.default.access_token
+  cluster_ca_certificate = base64decode(
+    google_container_cluster.gke.master_auth[0].cluster_ca_certificate
+  )
 }
 
 data "sops_file" "hugging_face_secrets" {
@@ -204,6 +210,11 @@ resource "kubernetes_deployment_v1" "ai_agent" {
                 key  = "HF_TOKEN"
               }
             }
+          }
+
+          env {
+            name = "USE_HUGGING_FACE_INTERFACE"
+            value = true
           }
         }
       }
