@@ -213,7 +213,7 @@ resource "kubernetes_deployment_v1" "ai_agent" {
           }
 
           env {
-            name = "USE_HUGGING_FACE_INTERFACE"
+            name  = "USE_HUGGING_FACE_INTERFACE"
             value = true
           }
         }
