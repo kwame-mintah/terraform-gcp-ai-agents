@@ -198,7 +198,7 @@ resource "kubernetes_deployment_v1" "ai_agent" {
       spec {
         container {
           name  = "ai-agent-container"
-          image = data.google_artifact_registry_docker_image.my_image.self_link
+          image = data.google_artifact_registry_docker_image.hello_app.self_link
           port {
             container_port = 8080
           }
@@ -226,6 +226,25 @@ resource "kubernetes_deployment_v1" "ai_agent" {
   }
 }
 
+resource "kubernetes_service_v1" "ai_agent" {
+  metadata {
+    name = "example-hello-app-loadbalancer"
+  }
+
+  spec {
+    selector = {
+      app = kubernetes_deployment_v1.ai_agent.spec[0].selector[0].match_labels.app
+    }
+
+    port {
+      port        = 80
+      target_port = kubernetes_deployment_v1.ai_agent.spec[0].template[0].spec[0].container[0].port[0].name
+    }
+
+    type = "LoadBalancer"
+  }
+}
+
 # Create a secret containing the personal access token and grant permissions to the Service Agent
 resource "google_secret_manager_secret" "hugging_face_secrets" {
   project   = var.gcp_project
@@ -247,10 +266,17 @@ resource "google_secret_manager_secret" "hugging_face_secrets" {
   }
 }
 
+
 # creates actual secrets
 resource "google_secret_manager_secret_version" "hugging_face_secret_version" {
   secret      = google_secret_manager_secret.hugging_face_secrets.id
   secret_data = data.sops_file.hugging_face_secrets.data.token
+}
+
+data "google_artifact_registry_docker_image" "hello_app" {
+  location      = "europe-west2"
+  repository_id = "hello-repo"
+  image_name    = "hello-app"
 }
 
 
