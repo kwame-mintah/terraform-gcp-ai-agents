@@ -137,6 +137,17 @@ resource "google_container_cluster" "gke" {
   deletion_protection = false
 }
 
+data "google_client_config" "default" {}
+
+provider "kubernetes" {
+  host = "https://${google_container_cluster.gke.endpoint}"
+
+  token = data.google_client_config.default.access_token
+  cluster_ca_certificate = base64decode(
+    google_container_cluster.gke.master_auth[0].cluster_ca_certificate
+  )
+}
+
 data "sops_file" "hugging_face_secrets" {
   source_file = "./hugging-face-secret.enc.yaml"
 }
@@ -190,6 +201,11 @@ resource "kubernetes_deployment_v1" "ai_agent" {
                 key  = "HF_TOKEN"
               }
             }
+          }
+
+          env {
+            name  = "USE_HUGGING_FACE_INTERFACE"
+            value = true
           }
         }
       }
