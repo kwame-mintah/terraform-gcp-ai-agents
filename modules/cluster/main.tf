@@ -80,7 +80,7 @@ resource "kubernetes_deployment_v1" "ai_agent" {
       spec {
         container {
           name  = "ai-agent-container"
-          image = data.google_artifact_registry_docker_image.hello_app.self_link
+          image = var.google_artifact_registry_repository_id
 
           port {
             container_port = 8080

@@ -116,3 +116,10 @@ resource "google_project_iam_member" "cloudbuild_upload_artifacts_role" {
   member  = "serviceAccount:${google_service_account.cloudbuild_service_account.email}"
 }
 
+module "cluster" {
+  source                            = "./modules/cluster"
+  gcp_project                       = var.gcp_project
+  gcp_region                        = var.gcp_region
+  google_artifact_registry_repository_id = google_artifact_registry_repository.ai_agent_docker_image_1.repository_id
+}
+
