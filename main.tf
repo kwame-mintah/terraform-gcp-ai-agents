@@ -126,11 +126,11 @@ data "google_compute_subnetwork" "default" {
   region = var.gcp_region
 }
 
-data "google_artifact_registry_docker_image" "my_image" {
-  location      = google_artifact_registry_repository.ai_agent_docker_image_1.location
-  repository_id = google_artifact_registry_repository.ai_agent_docker_image_1.repository_id
-  image_name    = "agent-image"
-}
+# data "google_artifact_registry_docker_image" "my_image" {
+#   location      = google_artifact_registry_repository.ai_agent_docker_image_1.location
+#   repository_id = google_artifact_registry_repository.ai_agent_docker_image_1.repository_id
+#   image_name    = "agent-image"
+# }
 
 # Minimal Autopilot GKE Cluster
 resource "google_container_cluster" "gke" {
@@ -238,7 +238,7 @@ resource "kubernetes_service_v1" "ai_agent" {
 
     port {
       port        = 80
-      target_port = kubernetes_deployment_v1.ai_agent.spec[0].template[0].spec[0].container[0].port[0].name
+      target_port = kubernetes_deployment_v1.ai_agent.spec[0].template[0].spec[0].container[0].port[0].container_port
     }
 
     type = "LoadBalancer"
