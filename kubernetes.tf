@@ -1,7 +1,7 @@
 
 data "google_artifact_registry_docker_image" "my_image" {
-  location      = var.gcp_region
-  repository_id = "ai-agent-docker-image-id-1" // TODO should I hard code repo id?
+  location      = google_artifact_registry_repository.ai_agent_docker_image_1.location
+  repository_id = google_artifact_registry_repository.ai_agent_docker_image_1.repository_id
   image_name    = "agent-image"
 }
 
