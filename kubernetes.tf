@@ -6,9 +6,9 @@ data "google_artifact_registry_docker_image" "my_image" {
 }
 
 module "cluster" {
-  source                            = "./modules/cluster"
-  gcp_project                       = var.gcp_project
-  gcp_region                        = var.gcp_region
+  source      = "./modules/cluster"
+  gcp_project = var.gcp_project
+  gcp_region  = var.gcp_region
 }
 
 data "google_client_config" "default" {}
