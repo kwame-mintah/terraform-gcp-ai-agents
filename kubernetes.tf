@@ -2,7 +2,7 @@
 data "google_artifact_registry_docker_image" "my_image" {
   location      = google_artifact_registry_repository.ai_agent_docker_image_1.location
   repository_id = google_artifact_registry_repository.ai_agent_docker_image_1.repository_id
-  image_name    = "agent-image"
+  image_name    = "python-chainlit-multi-agents-playground"
 }
 
 module "cluster" {
@@ -58,10 +58,12 @@ resource "kubernetes_deployment_v1" "ai_agent" {
           image = data.google_artifact_registry_docker_image.my_image.self_link
 
           port {
-            container_port = 8080
+            container_port = 8000
           }
+
+          
           env {
-            name = "HF_TOKEN"
+            name = "GOOGLE_GEMINI_API_KEY"
             value_from {
               secret_key_ref {
                 name = "hugging-face-token"
@@ -71,17 +73,22 @@ resource "kubernetes_deployment_v1" "ai_agent" {
           }
 
           env {
-            name  = "USE_HUGGING_FACE_INTERFACE"
-            value = true
+            name  = "GOOGLE_GEMINI_LLM_MODEL"
+            value = "gemini-2.5-flash"
+          }
+
+          env {
+            name  = "LLM_INFERENCE_PROVIDER"
+            value = "gemini"
           }
         }
       }
     }
   }
 
-  lifecycle {
-    ignore_changes = [spec[0].template[0].spec[0].container[0].image] # Terraform will create this cluster but never update or delete it
-  }
+  # lifecycle {
+  #   ignore_changes = [spec[0].template[0].spec[0].container[0].image] # Terraform will create this cluster but never update or delete it
+  # }
 }
 
 resource "kubernetes_service_v1" "ai_agent" {
