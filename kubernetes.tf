@@ -23,10 +23,6 @@ provider "kubernetes" {
   )
 }
 
-data "sops_file" "hugging_face_secrets" {
-  source_file = "./hugging-face-secret.enc.yaml"
-}
-
 
 # # https://cloud.google.com/kubernetes-engine/docs/quickstarts/create-cluster-using-terraform#review_the_terraform_files
 # Deploy your container
@@ -66,8 +62,8 @@ resource "kubernetes_deployment_v1" "ai_agent" {
             name = "GOOGLE_GEMINI_API_KEY"
             value_from {
               secret_key_ref {
-                name = "hugging-face-token"
-                key  = "HF_TOKEN"
+                name = "gemini-api-key"
+                key  = "GEMINI_API_KEY"
               }
             }
           }
@@ -110,32 +106,14 @@ resource "kubernetes_service_v1" "ai_agent" {
   }
 }
 
-# Create a secret containing the personal access token and grant permissions to the Service Agent
-resource "google_secret_manager_secret" "hugging_face_secrets" {
-  project   = var.gcp_project
-  secret_id = "syntax-errors-ai-agent-secret-module-hf"
-
-  replication {
-    auto {}
+resource "kubernetes_secret_v1" "gemini_api_key" {
+  metadata {
+    name = "gemini-api-key"
   }
-  labels = {
-    git_commit           = "438a95e0ee681ebe85f86f3a98628f087eb272c2"
-    git_file             = "main_tf"
-    git_last_modified_at = "2025-09-17-08-52-34"
-    git_last_modified_by = "laolu"
-    git_modifiers        = "laolu"
-    git_org              = "kwame-mintah"
-    git_repo             = "terraform-gcp-ai-agents"
-    yor_name             = "hugging_face_secrets"
-    yor_trace            = "3a651cc9-e97b-48fa-a222-6a958f9ceebd"
+
+  data = {
+    "GEMINI_API_KEY" = google_secret_manager_secret_version.gemini_api_key_secret_version.secret_data
   }
-}
-
-
-# creates actual secrets
-resource "google_secret_manager_secret_version" "hugging_face_secret_version" {
-  secret      = google_secret_manager_secret.hugging_face_secrets.id
-  secret_data = data.sops_file.hugging_face_secrets.data.token
 }
 
 resource "kubernetes_secret_v1" "hugging_face_token" {
