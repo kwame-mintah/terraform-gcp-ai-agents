@@ -45,47 +45,7 @@ data "google_iam_policy" "cloudbuild_service_account_iam_policy" {
 }
 
 
-resource "google_cloudbuildv2_repository" "hugging_face_smolagents_playground_repo" {
-  name              = "hugging-face-smolagents-playground"
-  location          = "europe-west1"
-  parent_connection = module.cloudbuild_github_connection.github_connection_name
-  remote_uri        = "https://github.com/kwame-mintah/hugging-face-smolagents-playground.git"
-}
 
-resource "google_cloudbuild_trigger" "hugging_face_smolagents_playground_repo_main_trigger" {
-  name        = "hugging-face-smolagents-main-branch-trigger"
-  description = "Trigger to run on new pushes to main branch"
-  location    = "europe-west1"
-
-  repository_event_config {
-    repository = google_cloudbuildv2_repository.hugging_face_smolagents_playground_repo.id
-    push {
-      branch       = "^main$"
-      invert_regex = false
-    }
-  }
-
-  service_account = google_service_account.cloudbuild_service_account.id
-  filename        = "cloudbuild.yaml"
-}
-
-resource "google_cloudbuild_trigger" "hugging_face_smolagents_playground_repo_pull_request_trigger" {
-  name        = "hugging-face-smolagents-pull-request-trigger"
-  description = "Pull request trigger to only run if /gcbrun is commented"
-  location    = "europe-west1"
-
-  repository_event_config {
-    repository = google_cloudbuildv2_repository.hugging_face_smolagents_playground_repo.id
-    pull_request {
-      branch          = "^main$"
-      invert_regex    = false
-      comment_control = "COMMENTS_ENABLED"
-    }
-  }
-
-  service_account = google_service_account.cloudbuild_service_account.id
-  filename        = "cloudbuild.yaml"
-}
 
 
 # Create cloud build service account
