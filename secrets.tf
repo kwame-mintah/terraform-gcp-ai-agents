@@ -51,7 +51,7 @@ resource "google_secret_manager_secret" "gemini_api_key" {
     git_modifiers        = "laolu"
     git_org              = "kwame-mintah"
     git_repo             = "terraform-gcp-ai-agents"
-    yor_name             = "hugging_face_secrets"
+    yor_name             = "gemini_api_key"
     yor_trace            = "3a651cc9-e97b-48fa-a222-6a958f9ceebd"
   }
 }
