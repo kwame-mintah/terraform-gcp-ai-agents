@@ -1,15 +1,17 @@
-data "sops_file" "hugging_face_secrets" {
-  source_file = "./hugging-face-secret.enc.yaml"
+#---------------------------------------------------
+# Secrets
+#---------------------------------------------------
+
+provider "sops" {}
+
+data "sops_file" "secrets" {
+  source_file = "./secrets.enc.yaml"
 }
 
-data "sops_file" "gemini_api_key" {
-  source_file = "./gemini-api-key.enc.yaml"
-}
-
-# Create a secret containing the personal access token and grant permissions to the Service Agent
+# Hugging face secret(s)
 resource "google_secret_manager_secret" "hugging_face_secrets" {
   project   = var.gcp_project
-  secret_id = "syntax-errors-ai-agent-secret-module-hf"
+  secret_id = "${var.environment}-hugging-face-api-token"
 
   replication {
     auto {}
@@ -27,18 +29,16 @@ resource "google_secret_manager_secret" "hugging_face_secrets" {
   }
 }
 
-# creates actual secrets
 resource "google_secret_manager_secret_version" "hugging_face_secret_version" {
   secret      = google_secret_manager_secret.hugging_face_secrets.id
-  secret_data = data.sops_file.hugging_face_secrets.data.token
+  secret_data = yamldecode(data.sops_file.secrets.raw).models.hugging_face_api_token
 }
 
 
-
-# Gemini API Key
-resource "google_secret_manager_secret" "gemini_api_key" {
+# Gemini secret(s)
+resource "google_secret_manager_secret" "gemini_secrets" {
   project   = var.gcp_project
-  secret_id = "syntax-errors-ai-agent-gemini-api-key"
+  secret_id = "${var.environment}-gemini-api-token"
 
   replication {
     auto {}
@@ -58,6 +58,6 @@ resource "google_secret_manager_secret" "gemini_api_key" {
 
 # creates actual secrets
 resource "google_secret_manager_secret_version" "gemini_api_key_secret_version" {
-  secret      = google_secret_manager_secret.gemini_api_key.id
-  secret_data = data.sops_file.gemini_api_key.data.token
+  secret      = google_secret_manager_secret.gemini_secrets.id
+  secret_data = yamldecode(data.sops_file.secrets.raw).models.gemini_api_token
 }

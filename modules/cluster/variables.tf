@@ -1,8 +1,8 @@
-variable "gcp_project" {
-    type = string
-}
-
 variable "gcp_region" {
-    type = string
-}
+  description = <<-EOF
+  The location for the resource.
 
+EOF
+
+  type = string
+}

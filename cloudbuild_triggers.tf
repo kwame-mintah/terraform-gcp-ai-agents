@@ -1,4 +1,7 @@
-# Smole agent
+#---------------------------------------------------
+# Cloud Build Triggers
+#---------------------------------------------------
+
 resource "google_cloudbuildv2_repository" "hugging_face_smolagents_playground_repo" {
   name              = "hugging-face-smolagents-playground"
   location          = "europe-west1"
@@ -17,7 +20,7 @@ resource "google_cloudbuild_trigger" "hugging_face_smolagents_playground_repo_ma
       branch       = "^main$"
       invert_regex = false
     }
-  } 
+  }
 
   service_account = google_service_account.cloudbuild_service_account.id
   filename        = "cloudbuild.yaml"
