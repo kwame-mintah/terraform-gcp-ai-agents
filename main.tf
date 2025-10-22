@@ -1,14 +1,10 @@
 # Data source to get project details
 data "google_project" "project" {}
 
-data "sops_file" "encrypted_secrets" {
-  source_file = "secrets.enc.yaml"
-}
-
 # Creates artifact register to store docker images
-resource "google_artifact_registry_repository" "ai_agent_docker_image_1" {
+resource "google_artifact_registry_repository" "ai_agent_docker_registry" {
   format        = "DOCKER"
-  repository_id = "ai-agent-docker-image-id-1"
+  repository_id = "${var.environment}-ai-agent-docker-images"
   description   = "Docker registry for AI agent application"
   location      = var.gcp_region
   labels = {
@@ -29,50 +25,10 @@ module "cloudbuild_github_connection" {
   source                            = "./modules/cloudbuild_github_connection"
   gcp_project                       = var.gcp_project
   gcp_location                      = "europe-west1"
-  cloudbuild_github_connection_name = "ai-agent-github-connection"
+  cloudbuild_github_connection_name = "${var.environment}-ai-agent-github-connection"
   cloudbuild_iam_policy_members     = ["serviceAccount:service-${data.google_project.project.number}@gcp-sa-cloudbuild.iam.gserviceaccount.com"]
-  github_app_installtion_id         = 69466052
-  secret_manager_secret_id          = "syntax-errors-ai-agent-secret-module"
-  sops_source_file                  = "./secrets.enc.yaml"
-}
-
-# creates data object for new iam policy
-data "google_iam_policy" "cloudbuild_service_account_iam_policy" {
-  binding {
-    role    = "roles/secretmanager.secretAccessor"
-    members = ["serviceAccount:service-${data.google_project.project.number}@gcp-sa-cloudbuild.iam.gserviceaccount.com"]
-  }
-}
-
-
-
-
-
-# Create cloud build service account
-resource "google_service_account" "cloudbuild_service_account" {
-  display_name = "${data.google_project.project.name} CloudBuild service account"
-  account_id   = "cloudbuild-service-account"
-  description  = "The service account needed for cloud build runs."
-}
-
-# Allow cloud build service account to assume another role
-resource "google_project_iam_member" "cloudbuild_act_as_role" {
-  project = data.google_project.project.project_id
-  role    = "roles/iam.serviceAccountUser"
-  member  = "serviceAccount:${google_service_account.cloudbuild_service_account.email}"
-}
-
-# Allow cloud build service account to write logs during builds
-resource "google_project_iam_member" "cloudbuild_logs_writer_role" {
-  project = data.google_project.project.project_id
-  role    = "roles/logging.logWriter"
-  member  = "serviceAccount:${google_service_account.cloudbuild_service_account.email}"
-}
-
-# Allow cloud build service account upload to artifact registry 
-resource "google_project_iam_member" "cloudbuild_upload_artifacts_role" {
-  project = data.google_project.project.project_id
-  role    = "roles/artifactregistry.createOnPushWriter"
-  member  = "serviceAccount:${google_service_account.cloudbuild_service_account.email}"
+  github_app_installation_id        = 69466052
+  secret_manager_secret_id          = "${var.environment}-github-connection-secrets"
+  github_personal_access_token      = yamldecode(data.sops_file.secrets.raw).github.github_personal_token
 }
 

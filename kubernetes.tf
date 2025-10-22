@@ -1,7 +1,11 @@
+#---------------------------------------------------
+# Kubernetes Deployments
+#---------------------------------------------------
 
+data "google_client_config" "default" {}
 data "google_artifact_registry_docker_image" "my_image" {
-  location      = google_artifact_registry_repository.ai_agent_docker_image_1.location
-  repository_id = google_artifact_registry_repository.ai_agent_docker_image_1.repository_id
+  location      = google_artifact_registry_repository.ai_agent_docker_registry.location
+  repository_id = google_artifact_registry_repository.ai_agent_docker_registry.repository_id
   image_name    = "python-chainlit-multi-agents-playground"
 }
 
@@ -10,9 +14,6 @@ module "cluster" {
   gcp_project = var.gcp_project
   gcp_region  = var.gcp_region
 }
-
-data "google_client_config" "default" {}
-
 
 provider "kubernetes" {
   host = "https://${module.cluster.gke_cluster.endpoint}"
@@ -23,41 +24,40 @@ provider "kubernetes" {
   )
 }
 
-
-# # https://cloud.google.com/kubernetes-engine/docs/quickstarts/create-cluster-using-terraform#review_the_terraform_files
-# Deploy your container
+# Deploy AI agent workload
+# https://cloud.google.com/kubernetes-engine/docs/quickstarts/create-cluster-using-terraform#review_the_terraform_files
 resource "kubernetes_deployment_v1" "ai_agent" {
   metadata {
-    name = "ai-agent-deployment"
+    name = "${var.environment}-ai-agent-deployment"
     labels = {
-      app = "ai-agent"
+      app = "${var.environment}-ai-agent"
     }
   }
 
   spec {
     selector {
       match_labels = {
-        app = "ai-agent"
+        app = "${var.environment}-ai-agent"
       }
     }
 
     template {
       metadata {
         labels = {
-          app = "ai-agent"
+          app = "${var.environment}-ai-agent"
         }
       }
 
       spec {
         container {
-          name  = "ai-agent-container"
+          name  = "${var.environment}-ai-agent-container"
           image = data.google_artifact_registry_docker_image.my_image.self_link
 
           port {
             container_port = 8000
           }
 
-          
+
           env {
             name = "GOOGLE_GEMINI_API_KEY"
             value_from {
@@ -82,14 +82,14 @@ resource "kubernetes_deployment_v1" "ai_agent" {
     }
   }
 
-  # lifecycle {
-  #   ignore_changes = [spec[0].template[0].spec[0].container[0].image] # Terraform will create this cluster but never update or delete it
-  # }
+  lifecycle {
+    ignore_changes = [spec[0].template[0].spec[0].container[0].image] # Ignored as initial docker image will change with future deployment(s)
+  }
 }
 
 resource "kubernetes_service_v1" "ai_agent" {
   metadata {
-    name = "example-hello-app-loadbalancer"
+    name = "${var.environment}-ai-agent-loadbalancer"
   }
 
   spec {
