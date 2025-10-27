@@ -17,11 +17,11 @@ resource "google_secret_manager_secret" "hugging_face_secrets" {
     auto {}
   }
   labels = {
-    git_commit           = "438a95e0ee681ebe85f86f3a98628f087eb272c2"
-    git_file             = "main_tf"
-    git_last_modified_at = "2025-09-17-08-52-34"
-    git_last_modified_by = "laolu"
-    git_modifiers        = "laolu"
+    git_commit           = "b01b3566cd3f152d0549df88e26847296f6b3dfb"
+    git_file             = "secrets_tf"
+    git_last_modified_at = "2025-10-22-18-37-50"
+    git_last_modified_by = "kwame_mintah"
+    git_modifiers        = "kwame_mintah__laolu"
     git_org              = "kwame-mintah"
     git_repo             = "terraform-gcp-ai-agents"
     yor_name             = "hugging_face_secrets"
@@ -44,14 +44,14 @@ resource "google_secret_manager_secret" "gemini_secrets" {
     auto {}
   }
   labels = {
-    git_commit           = "438a95e0ee681ebe85f86f3a98628f087eb272c2"
-    git_file             = "main_tf"
-    git_last_modified_at = "2025-09-17-08-52-34"
-    git_last_modified_by = "laolu"
-    git_modifiers        = "laolu"
+    git_commit           = "b01b3566cd3f152d0549df88e26847296f6b3dfb"
+    git_file             = "secrets_tf"
+    git_last_modified_at = "2025-10-22-18-37-50"
+    git_last_modified_by = "kwame_mintah"
+    git_modifiers        = "kwame_mintah__laolu"
     git_org              = "kwame-mintah"
     git_repo             = "terraform-gcp-ai-agents"
-    yor_name             = "gemini_api_key"
+    yor_name             = "gemini_secrets"
     yor_trace            = "3a651cc9-e97b-48fa-a222-6a958f9ceebd"
   }
 }

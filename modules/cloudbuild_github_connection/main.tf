@@ -20,7 +20,7 @@ resource "google_secret_manager_secret" "github_token_secret" {
   labels = {
     yor_name             = "github_token_secret"
     yor_trace            = "2fc94af2-0c94-499f-9d2b-f07b18a1c4c3"
-    git_commit           = "f73f9d74457f282c43d0f6410db1c6d0fde5a33e"
+    git_commit           = "a317e6e9327687ce7d6fe30dde2aeb82003bc00a"
     git_file             = "modules__cloudbuild_github_connection__main_tf"
     git_last_modified_at = "2025-08-19-14-20-10"
     git_last_modified_by = "laolu"

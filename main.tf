@@ -9,14 +9,14 @@ resource "google_artifact_registry_repository" "ai_agent_docker_registry" {
   location      = var.gcp_region
   labels = {
     "environment"        = var.environment
-    git_commit           = "c6e78a9a04a7158aeca11d11edca7b9420a74593"
+    git_commit           = "a317e6e9327687ce7d6fe30dde2aeb82003bc00a"
     git_file             = "main_tf"
-    git_last_modified_at = "2025-07-01-14-16-20"
-    git_last_modified_by = "37197235kwame-mintah"
-    git_modifiers        = "37197235kwame-mintah__laoluanimashaun"
+    git_last_modified_at = "2025-10-22-18-37-50"
+    git_last_modified_by = "kwame_mintah"
+    git_modifiers        = "37197235kwame-mintah__kwame_mintah__laoluanimashaun"
     git_org              = "kwame-mintah"
     git_repo             = "terraform-gcp-ai-agents"
-    yor_name             = "ai_agent_docker_image_1"
+    yor_name             = "ai_agent_docker_registry"
     yor_trace            = "e98a609e-1970-45b9-a2e9-05be327afa2e"
   }
 }
