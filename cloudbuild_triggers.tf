@@ -3,6 +3,8 @@
 #---------------------------------------------------
 
 resource "google_cloudbuildv2_repository" "hugging_face_smolagents_playground_repo" {
+  count = var.environment == "dev" ? 1 : 0
+
   name              = "python-hugging-face-smolagents-playground"
   location          = "europe-west1"
   parent_connection = module.cloudbuild_github_connection.github_connection_name
@@ -10,12 +12,14 @@ resource "google_cloudbuildv2_repository" "hugging_face_smolagents_playground_re
 }
 
 resource "google_cloudbuild_trigger" "hugging_face_smolagents_playground_repo_main_trigger" {
+  count = var.environment == "dev" ? 1 : 0
+
   name        = "python-hugging-face-smolagents-main-branch-trigger"
   description = "Trigger to run on new pushes to main branch"
   location    = "europe-west1"
 
   repository_event_config {
-    repository = google_cloudbuildv2_repository.hugging_face_smolagents_playground_repo.id
+    repository = google_cloudbuildv2_repository.hugging_face_smolagents_playground_repo[0].id
     push {
       branch       = "^main$"
       invert_regex = false
@@ -27,12 +31,14 @@ resource "google_cloudbuild_trigger" "hugging_face_smolagents_playground_repo_ma
 }
 
 resource "google_cloudbuild_trigger" "hugging_face_smolagents_playground_repo_pull_request_trigger" {
+  count = var.environment == "dev" ? 1 : 0
+
   name        = "python-hugging-face-smolagents-pull-request-trigger"
   description = "Pull request trigger to only run if /gcbrun is commented"
   location    = "europe-west1"
 
   repository_event_config {
-    repository = google_cloudbuildv2_repository.hugging_face_smolagents_playground_repo.id
+    repository = google_cloudbuildv2_repository.hugging_face_smolagents_playground_repo[0].id
     pull_request {
       branch          = "^main$"
       invert_regex    = false
@@ -45,6 +51,8 @@ resource "google_cloudbuild_trigger" "hugging_face_smolagents_playground_repo_pu
 }
 
 resource "google_cloudbuildv2_repository" "chainlit_repo" {
+  count = var.environment == "dev" ? 1 : 0
+
   name              = "python-chainlit-multi-agents-playground"
   location          = "europe-west1"
   parent_connection = module.cloudbuild_github_connection.github_connection_name
@@ -52,12 +60,14 @@ resource "google_cloudbuildv2_repository" "chainlit_repo" {
 }
 
 resource "google_cloudbuild_trigger" "chainlit_repo_main_trigger" {
+  count = var.environment == "dev" ? 1 : 0
+
   name        = "python-chainlit-multi-agents-playground-main-branch-trigger"
   description = "Trigger to run on new pushes to main branch"
   location    = "europe-west1"
 
   repository_event_config {
-    repository = google_cloudbuildv2_repository.chainlit_repo.id
+    repository = google_cloudbuildv2_repository.chainlit_repo[0].id
     push {
       branch       = "^main$"
       invert_regex = false
@@ -69,12 +79,14 @@ resource "google_cloudbuild_trigger" "chainlit_repo_main_trigger" {
 }
 
 resource "google_cloudbuild_trigger" "chainlit_repo_pull_request_trigger" {
+  count = var.environment == "dev" ? 1 : 0
+
   name        = "python-chainlit-multi-agents-playground-pull-request-trigger"
   description = "Pull request trigger to only run if /gcbrun is commented"
   location    = "europe-west1"
 
   repository_event_config {
-    repository = google_cloudbuildv2_repository.chainlit_repo.id
+    repository = google_cloudbuildv2_repository.chainlit_repo[0].id
     pull_request {
       branch          = "^main$"
       invert_regex    = false
