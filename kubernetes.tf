@@ -3,7 +3,7 @@
 #---------------------------------------------------
 
 data "google_client_config" "default" {}
-data "google_artifact_registry_docker_image" "my_image" {
+data "google_artifact_registry_docker_image" "chainlit_multi_agents_docker_image" {
   location      = google_artifact_registry_repository.ai_agent_docker_registry.location
   repository_id = google_artifact_registry_repository.ai_agent_docker_registry.repository_id
   image_name    = "python-chainlit-multi-agents-playground"
@@ -50,7 +50,7 @@ resource "kubernetes_deployment_v1" "ai_agent" {
       spec {
         container {
           name  = "${var.environment}-ai-agent-container"
-          image = data.google_artifact_registry_docker_image.my_image.self_link
+          image = data.google_artifact_registry_docker_image.chainlit_multi_agents_docker_image.self_link
 
           port {
             container_port = 8000
