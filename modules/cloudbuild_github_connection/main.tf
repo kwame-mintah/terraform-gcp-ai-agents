@@ -1,8 +1,15 @@
-data "sops_file" "encrypted_secrets" {
-  source_file = var.sops_source_file
+#---------------------------------------------------
+# Cloud Build GitHub Connection
+#---------------------------------------------------
+
+data "google_iam_policy" "cloudbuild_service_account_iam_policy" {
+  binding {
+    role    = "roles/secretmanager.secretAccessor"
+    members = var.cloudbuild_iam_policy_members
+  }
 }
 
-# Create a secret containing the personal access token and grant permissions to the Service Agent
+# Create a secret containing the personal access token and grant permissions to the Service Account
 resource "google_secret_manager_secret" "github_token_secret" {
   project   = var.gcp_project
   secret_id = var.secret_manager_secret_id
@@ -23,18 +30,9 @@ resource "google_secret_manager_secret" "github_token_secret" {
   }
 }
 
-# creates actual secrets
 resource "google_secret_manager_secret_version" "github_token_secret_version" {
   secret      = google_secret_manager_secret.github_token_secret.id
-  secret_data = data.sops_file.encrypted_secrets.data.github_personal_token
-}
-
-# creates data object for new iam policy
-data "google_iam_policy" "cloudbuild_service_account_iam_policy" {
-  binding {
-    role    = "roles/secretmanager.secretAccessor"
-    members = var.cloudbuild_iam_policy_members
-  }
+  secret_data = var.github_personal_access_token
 }
 
 # creates actual iam policy giving service account access to secret
@@ -51,7 +49,7 @@ resource "google_cloudbuildv2_connection" "cloudbuild_github_project_connection"
   name     = var.cloudbuild_github_connection_name
 
   github_config {
-    app_installation_id = var.github_app_installtion_id
+    app_installation_id = var.github_app_installation_id
     authorizer_credential {
       oauth_token_secret_version = google_secret_manager_secret_version.github_token_secret_version.id
     }
