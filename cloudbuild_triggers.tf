@@ -6,7 +6,7 @@ resource "google_cloudbuildv2_repository" "hugging_face_smolagents_playground_re
   name              = "hugging-face-smolagents-playground"
   location          = "europe-west1"
   parent_connection = module.cloudbuild_github_connection.github_connection_name
-  remote_uri        = "https://github.com/kwame-mintah/hugging-face-smolagents-playground.git"
+  remote_uri        = "https://github.com/kwame-mintah/python-hugging-face-smolagents-playground.git"
 }
 
 resource "google_cloudbuild_trigger" "hugging_face_smolagents_playground_repo_main_trigger" {
